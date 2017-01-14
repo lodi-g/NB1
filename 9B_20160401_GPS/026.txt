@@ -1,0 +1,5 @@
+Version	2	Start	1459535196.169
+Time	Valor
+V	26	Version
+0.016	12597
+0.242	12597

@@ -1,0 +1,5 @@
+Version	2	Start	1459535196.169
+Time	Valor
+V	42	Total Mileage 1
+0.302	5
+789.043	5

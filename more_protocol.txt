@@ -1,0 +1,54 @@
+I'm now able to remotely control and drive the motion of the Ninebot mini, it's quite similar to what Paco described in the OP. Here are the additional details:
+
+The Ninebot mini uses a UART-style interface, similar to what Paco described, with some slight differences. It actually uses the same UUIDs as the "Noridc UART Service" 6e400001-b5a3-f393-e0a9-e50e24dcca9e
+
+WRITE COMMANDs (Write without response) are sent from the app to the "RX Characteristic" 6e400002-b5a3-f393-e0a9-e50e24dcca9e ("RX" is from the point-of-view of the Ninebot mini)
+
+NOTIFICATIONS of "TX Characteristic" value changes occur on 6e400003-b5a3-f393-e0a9-e50e24dcca9e
+
+Again, all messages are sent as packets structured like
+
+ +---+---+---+---+---+---+---+---+---+
+ |x55|xAA| l | b1| b2| c |dat|ck0|ck1|
+ +---+---+---+---+---+---+---+---+---+
+
+x55 and xAA are indeed a fixed header; you can see that if you take a look through the decompiled Android app.
+
+b1 and b2 can vary, they are usually x09 and x01, respectively, as Paco observed, but for a lot of the "command" types that change something on the Ninebot mini, b2 is x03. I loosely suspect that b2=x01 means "get status variable / info" and b2=x03 often means "command"
+
+I haven't looked at all the messages yet, so I don't know if messages are still spread across multiple packets in some cases.
+
+ 
+
+Remote control of the Ninebot mini
+
+ 
+
+To enter remote control mode for the Ninebot mini, b1 = 0x0A, b2 = 0x03, c = 0x7A, and data = 0x0100
+
+To send a drive command, b1 = 0x0A, b2 = 0x03, c = 0x7B, and data is 4 bytes, organized as such:
+
+ +---+---+---+---+---+---+---+---+---+---+---+---+
+ |x55|xAA|x06|x0A|x03|x7B|s_l|s_h|r_l|r_h|ck0|ck1|
+ +---+---+---+---+---+---+---+---+---+---+---+---+
+
+where
+
+[s_l:s_h] is a 16-bit value (s_l is low bits, s_h is high bits) to set the target speed forward / backward. (The Ninebot mini figures out how much to tilt and when to reduce tilt angle / tilt in the opposite direction when it goes over the target speed, it has some sort of simple onboard feedback loop to try to reach the target speed).
+
+[s_h:s_l] from 0x7FFF to 0x0000 ranges from maximum forward speed to 0 forward speed
+
+[s_h:s_l] from 0x8000 to 0xFFFF ranges from maximum backward speed to 0 backward speed
+
+ 
+
+[t_l:t_h] is a 16-bit value (t_l is low bits, t_h is high bits) to set the turning speed left or right.
+
+[t_h:t_l] from 0x7FFF to 0x0000 ranges from maximum turning speed left to 0 turning speed left
+
+[t_h:t_l] from 0x8000 to 0xFFFF ranges from maximum turning speed right to 0 turning speed right
+
+ 
+
+Probably for safety reasons, you must continuously send these drive commands to keep the Ninebot mini in motion. If you stop sending drive commands, after a second or so, the Ninebot mini stops moving.
+

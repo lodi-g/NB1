@@ -1,0 +1,5 @@
+Version	2	Start	1459535196.169
+Time	Valor
+V	35	?
+0.273	0
+789.129	0

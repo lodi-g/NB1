@@ -1,0 +1,5 @@
+Version	2	Start	1459535196.169
+Time	Valor
+V	100	Roll Angle Angular Velocity
+0.272	0
+789.134	0

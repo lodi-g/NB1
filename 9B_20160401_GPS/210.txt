@@ -1,0 +1,5 @@
+Version	2	Start	1459535196.169
+Time	Valor
+V	210	Ride Mode
+0.062	4
+0.240	4

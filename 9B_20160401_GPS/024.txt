@@ -1,0 +1,5 @@
+Version	2	Start	1459535196.169
+Time	Valor
+V	24	BTPin1
+0.013	12336
+0.242	12336

@@ -1,0 +1,5 @@
+Version	2	Start	1459535196.169
+Time	Valor
+V	116	Speed Limit
+0.060	17000
+0.239	17000

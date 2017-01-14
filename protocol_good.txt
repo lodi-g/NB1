@@ -1,0 +1,132 @@
+2016-02-04 23:10:56.841 NinebotClientTest[721:368142]  >>> Sending command 23 param 8
+55aa08090117303030303030b6fe  [25: 12336, 23: 12336, 24: 12336]
+55aa0409011a353171ff    [26: 12597]
+
+2016-02-04 23:10:57.840 NinebotClientTest[721:368142]  >>> Sending command 16 param 14
+55aa080901104e324f45413157fe 	[16: 12878, 17: 17743, 18: 12609]
+55aa0809011335333341343595fe	[20: 16691, 21: 13620, 19: 13109]
+55aa04090116313278ff			[22: 12849]
+
+2016-02-04 23:10:58.840 NinebotClientTest[721:368142]  >>> Sending command 176 param 32
+
+55aa080901b000000000080035ff	[176: 0, 177: 0, 178: 8]
+55aa080901b300003300000007ff	[179: 0, 181: 0, 180: 51]
+55aa080901b6442f0b4b01006dfe	[184: 1, 182: 12100, 183: 19211]
+55aa080901b9000042002d01c4fe	[185: 0, 186: 66, 187: 301]
+55aa080901bc7615080000009efe	[188: 5494, 189: 8, 190: 0]
+55aa040901bf000032ff			[191: 0]
+
+2016-02-04 23:10:59.840 NinebotClientTest[721:368142]  >>> Sending command 37 param 2
+55aa040901256c055bff			[37: 1388]
+
+2016-02-04 23:11:00.840 NinebotClientTest[721:368142]  >>> Sending command 59 param 2
+55aa0409013b0000b6ff			[59: 0]
+
+// Model works around a variable array of values.
+// Each value is labeled by its position, So we have labels 0..255
+
+// Communications work following :
+
+	Service FFE0
+	Characteristic FFE1
+	Read
+	Write without response
+	Notify
+
+
+	Client (iPhone) connects to server (Ninebot) service FFE0 and subscribes to characteristic FFE1
+	
+	Packets are similary built (data in Hexa)
+	
+//  +---+---+---+---+---+---+---+---+---+
+//  |x55|xAA| l |x09|x01| c |...|ck0|ck1|
+//  +---+---+---+---+---+---+---+---+---+
+//
+//  ... Are a UInt8 array of l-2 elements
+//  ck0, ck1 are computed from the elements from l to the last of ...
+//  x55 and xAA are fixed and are Beggining of buffer
+//  l is the size of ... + 2 
+//  x09 and x01 seem fixed for Ninebot One but it is not clear
+//  c is a command or variable. 
+
+Commands are sent from the client to the server writing the characteristic value
+Answers are received by notifications of variable update
+
+In commands c is the initial variable we ask for and there is one parmeter. It is double the number
+of variables to receive.
+
+For example for ask for variable 23 to 27 we send c = 23 and param = 8
+
+Answers have parameters always in pairs.
+c is first variable answer
+each 2 bytes of parameter represent a value of the variable where v = p[i+1] * 256 + p[i]
+
+Variable 184 and 184 combine to form a long value as : v[184]*65536+v[183]
+
+Variable 178 is a flag variable. Bits beggining from less value are
+
+	Bit
+	0		Limit Speed
+	1		Lock
+	2		Beep
+
+Other bits are unknown althought they have values
+
+Code Error				176				0
+Code Warning			177				0
+Power					180				61
+Work_mode				179				0
+Speed					181				1
+Max_Speed				191				0
+Average_Speed			182				4500
+Temperature				187				265
+Remained_Mileage		37				1654
+Ride Mileage			183 & 184Packed	83062
+Single Mileage			185				0
+Ride Runtime			58 o 59			O una o L'altre	
+Lock					178	bit 1		8
+Limit Speed				178	bit 0		8
+Beep					178	bit 2		8
+Drive oltage			188				54.98
+
+
+Example : 
+
+2016-02-04 23:10:55.126 NinebotClientTest[721:368142] Scanning started
+2016-02-04 23:10:55.411 NinebotClientTest[721:368142] Discovered NOEPaco 001 - <__NSConcreteUUID 0x12655c550> B550AB72-A05F-7AD8-0F37-14B30C042E42
+2016-02-04 23:10:55.412 NinebotClientTest[721:368142] Connecting to peripheral <CBPeripheral: 0x126720c50, identifier = B550AB72-A05F-7AD8-0F37-14B30C042E42, name = NOEPaco 001, state = disconnected>
+2016-02-04 23:10:55.541 NinebotClientTest[721:368142] Connected
+2016-02-04 23:10:55.542 NinebotClientTest[721:368142] Scanning stopped
+2016-02-04 23:10:55.748 NinebotClientTest[721:368142] Service FFE0
+2016-02-04 23:10:55.838 NinebotClientTest[721:368142] Subscrit a la variable del Ninebot : <CBCharacteristic: 0x12655cb80, UUID = FFE1, properties = 0x16, value = (null), notifying = NO>
+2016-02-04 23:10:56.841 NinebotClientTest[721:368142]  >>> Sending command 23 param 8
+2016-02-04 23:10:56.873 NinebotClientTest[721:368142] <<< <55aa0809 01173030 30303030 b6fe55aa 0409011a>
+2016-02-04 23:10:56.874 NinebotClientTest[721:368142] <<< <353171ff>
+2016-02-04 23:10:57.840 NinebotClientTest[721:368142]  >>> Sending command 16 param 14
+2016-02-04 23:10:57.886 NinebotClientTest[721:368142] <<< <55aa0809 01104e32 4f454131 57fe55aa 08090113>
+2016-02-04 23:10:57.886 NinebotClientTest[721:368142] <<< <35333341 343595fe 55aa0409 01163132 78ff>
+2016-02-04 23:10:58.840 NinebotClientTest[721:368142]  >>> Sending command 176 param 32
+2016-02-04 23:10:58.875 NinebotClientTest[721:368142] <<< <55aa0809 01b00000 00000800 35ff55aa 080901b3>
+2016-02-04 23:10:58.876 NinebotClientTest[721:368142] <<< <00003300 000007ff 55aa0809 01b6442f 0b4b0100>
+2016-02-04 23:10:58.898 NinebotClientTest[721:368142] <<< <6dfe55aa 080901b9 00004200 2d01c4fe 55aa0809>
+2016-02-04 23:10:58.899 NinebotClientTest[721:368142] <<< <01bc7615 08000000 9efe55aa 040901bf 000032ff>
+2016-02-04 23:10:59.840 NinebotClientTest[721:368142]  >>> Sending command 37 param 2
+2016-02-04 23:10:59.888 NinebotClientTest[721:368142] <<< <55aa0409 01256c05 5bff>
+2016-02-04 23:11:00.840 NinebotClientTest[721:368142]  >>> Sending command 59 param 2
+2016-02-04 23:11:00.878 NinebotClientTest[721:368142] <<< <55aa0409 013b0000 b6ff>
+
+
+Sending data
+
+Seems similar than asking for values but the 0x09 0x01 are changed to 0x09 and 0x03
+
+So to write the “riding mode” (variable 210, 0xd2 ) to 3 (hexa 0x0003)we shoud send
+
+55 aa 04 09 03 d2 0300 1aff
+
+When setting speed limit its units must be m/h. For example for setting speed (variable 116 = 0x74) limit to 7 km/h
+
+7 km/h = 7000 m/h = 0x1B58
+
+55 aa 04 09 03 74 581b 08ff
+
